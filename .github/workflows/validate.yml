@@ -1,0 +1,49 @@
+name: Validate plugin
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate plugin.json
+        run: |
+          python3 -c "
+          import json, sys
+          j = json.load(open('.claude-plugin/plugin.json'))
+          assert j.get('name') == 'forge', 'name mismatch'
+          assert j.get('version'), 'version missing'
+          assert j.get('license'), 'license missing'
+          print('plugin.json OK:', j['name'], j['version'])
+          "
+      - name: Validate marketplace.json
+        run: |
+          python3 -c "
+          import json
+          m = json.load(open('.claude-plugin/marketplace.json'))
+          assert m.get('name') == 'forge'
+          assert m.get('plugins'), 'plugins[] missing'
+          assert all(p.get('name') and p.get('source') for p in m['plugins'])
+          print('marketplace.json OK:', len(m['plugins']), 'plugin(s)')
+          "
+      - name: Check required component dirs exist
+        run: |
+          for d in agents skills commands scripts; do
+            [ -d "$d" ] && echo "$d/ ✓" || { echo "$d/ MISSING"; exit 1; }
+          done
+      - name: Check every agent has model frontmatter
+        run: |
+          for f in agents/*.md; do
+            grep -q '^model:' "$f" || { echo "$f missing 'model:' frontmatter"; exit 1; }
+            echo "$f ✓"
+          done
+      - name: Scripts are executable
+        run: |
+          for s in scripts/*.sh; do
+            [ -x "$s" ] || { echo "$s not executable"; exit 1; }
+          done
+          echo "all scripts executable"
