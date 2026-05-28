@@ -13,9 +13,9 @@ jobs:
       - name: Validate plugin.json
         run: |
           python3 -c "
-          import json, sys
+          import json
           j = json.load(open('.claude-plugin/plugin.json'))
-          assert j.get('name') == 'forge', 'name mismatch'
+          assert j.get('name') == 'forge', 'plugin name mismatch'
           assert j.get('version'), 'version missing'
           assert j.get('license'), 'license missing'
           print('plugin.json OK:', j['name'], j['version'])
@@ -25,21 +25,21 @@ jobs:
           python3 -c "
           import json
           m = json.load(open('.claude-plugin/marketplace.json'))
-          assert m.get('name') == 'forge'
+          assert m.get('name') == 'claude-forge', 'marketplace name mismatch'
           assert m.get('plugins'), 'plugins[] missing'
           assert all(p.get('name') and p.get('source') for p in m['plugins'])
-          print('marketplace.json OK:', len(m['plugins']), 'plugin(s)')
+          print('marketplace.json OK:', m['name'], '·', len(m['plugins']), 'plugin(s)')
           "
-      - name: Check required component dirs exist
+      - name: Check required component dirs
         run: |
           for d in agents skills commands scripts; do
-            [ -d "$d" ] && echo "$d/ ✓" || { echo "$d/ MISSING"; exit 1; }
+            [ -d "$d" ] && echo "$d/ ok" || { echo "$d/ MISSING"; exit 1; }
           done
       - name: Check every agent has model frontmatter
         run: |
           for f in agents/*.md; do
             grep -q '^model:' "$f" || { echo "$f missing 'model:' frontmatter"; exit 1; }
-            echo "$f ✓"
+            echo "$f ok"
           done
       - name: Scripts are executable
         run: |
