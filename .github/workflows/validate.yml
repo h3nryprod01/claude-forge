@@ -32,7 +32,7 @@ jobs:
           "
       - name: Check required component dirs
         run: |
-          for d in agents skills commands scripts; do
+          for d in agents skills scripts; do
             [ -d "$d" ] && echo "$d/ ok" || { echo "$d/ MISSING"; exit 1; }
           done
       - name: Check every agent has model frontmatter

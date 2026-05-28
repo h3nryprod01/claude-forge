@@ -2,6 +2,14 @@
 
 All notable changes to Forge are documented in this file. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [0.1.1] — 2026-05-28
+
+### Changed
+
+- Removed `commands/forge.md` (duplicate of `skills/forge/SKILL.md`). The skill
+  is still invokable as `/forge` in Claude Code and auto-triggers on natural
+  language in Cowork. Saves ~60 always-on tokens per session.
+
 ## [0.1.0] — 2026-05-28
 
 ### Added
