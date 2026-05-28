@@ -47,7 +47,7 @@ Restart Claude Code. Plugin is auto-discovered.
 Build the `.plugin` file and open it in Cowork:
 
 ```bash
-git clone https://github.com/h3nryprod01/claude-forge && cd forge
+git clone https://github.com/h3nryprod01/claude-forge && cd claude-forge
 zip -r /tmp/forge.plugin . -x ".git/*" "*.DS_Store"
 open /tmp/forge.plugin
 ```
