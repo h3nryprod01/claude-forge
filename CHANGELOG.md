@@ -2,6 +2,15 @@
 
 All notable changes to Forge are documented in this file. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [0.2.0] — 2026-05-28
+
+### Changed
+
+- **`forge-planner` and `forge-reviewer` now pinned to `claude-opus-4-8`**
+  (was the unpinned `opus` alias, which resolved to whatever Claude Code's
+  current default was — typically Opus 4.5 or 4.7). Applies to both Claude
+  Code and Cowork. Docs updated everywhere "Opus 4.5" appeared.
+
 ## [0.1.1] — 2026-05-28
 
 ### Changed

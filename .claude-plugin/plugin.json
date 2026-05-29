@@ -1,6 +1,6 @@
 {
   "name": "forge",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Sequential build pipeline — plan → code → test → review → deploy — with auto-routed Opus/Sonnet/Haiku models per phase.",
   "author": {
     "name": "Nguyen Phuc Uong",

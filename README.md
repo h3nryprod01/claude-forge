@@ -15,10 +15,10 @@ and right-sizes the model.
 
 | Phase | Agent | Model | Output |
 |---|---|---|---|
-| Plan | `forge-planner` | **Opus 4.5** | `plan.md` with checkboxes |
+| Plan | `forge-planner` | **Opus 4.8** | `plan.md` with checkboxes |
 | Code | `forge-coder` | **Sonnet 4.6** | files edited / created |
 | Test | `forge-tester` | **Sonnet 4.6** | tests passing |
-| Review | `forge-reviewer` | **Opus 4.5** | findings + auto-fix safe items |
+| Review | `forge-reviewer` | **Opus 4.8** | findings + auto-fix safe items |
 | Deploy | `forge-deployer` | **Haiku 4.5** | URL + status |
 
 Approximate cost vs. all-Sonnet: −40 to −60 %. Vs. all-Opus: −70 to −80 %.

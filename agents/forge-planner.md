@@ -1,7 +1,7 @@
 ---
 name: forge-planner
 description: Phase 1 of the Forge pipeline. Reads the task brief, surveys the codebase, designs the approach with explicit tradeoffs, and produces a checklist plan that the coder can execute. Use ONLY when invoked by /forge or another Forge agent — not as a general planning agent.
-model: opus
+model: claude-opus-4-8
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 

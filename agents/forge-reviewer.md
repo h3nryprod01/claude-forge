@@ -1,7 +1,7 @@
 ---
 name: forge-reviewer
 description: Phase 4 of the Forge pipeline. Adversarial review of the diff for bugs, security, simplification, dead code. Auto-applies LOW/MEDIUM fixes; surfaces HIGH/CRITICAL for the user to decide. Use ONLY when invoked by /forge.
-model: opus
+model: claude-opus-4-8
 tools: Read, Grep, Glob, Edit, Bash
 ---
 

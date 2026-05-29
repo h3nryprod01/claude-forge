@@ -10,10 +10,10 @@ pinned to the right model for its job:
 
 | Phase  | Agent              | Model        |
 | ------ | ------------------ | ------------ |
-| Plan   | `forge-planner`    | Opus 4.5     |
+| Plan   | `forge-planner`    | Opus 4.8     |
 | Code   | `forge-coder`      | Sonnet 4.6   |
 | Test   | `forge-tester`     | Sonnet 4.6   |
-| Review | `forge-reviewer`   | Opus 4.5     |
+| Review | `forge-reviewer`   | Opus 4.8     |
 | Deploy | `forge-deployer`   | Haiku 4.5    |
 
 Your job: dispatch them in order, manage `.forge/<id>/state.json`, and surface
