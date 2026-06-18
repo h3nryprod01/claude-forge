@@ -1,7 +1,7 @@
 {
   "name": "forge",
-  "version": "0.2.0",
-  "description": "Sequential build pipeline — plan → code → test → review → deploy — with auto-routed Opus/Sonnet/Haiku models per phase.",
+  "version": "0.3.0",
+  "description": "Sequential build pipeline — plan → code → test → review → security → deploy — with auto-routed Opus/Sonnet/Haiku models per phase.",
   "author": {
     "name": "Nguyen Phuc Uong",
     "url": "https://github.com/h3nryprod01"
@@ -9,5 +9,5 @@
   "license": "MIT",
   "homepage": "https://github.com/h3nryprod01/claude-forge",
   "repository": "https://github.com/h3nryprod01/claude-forge",
-  "keywords": ["pipeline", "agents", "build", "tdd", "ci", "orchestration", "opus", "sonnet", "haiku"]
+  "keywords": ["pipeline", "agents", "build", "tdd", "ci", "security", "orchestration", "opus", "sonnet", "haiku"]
 }

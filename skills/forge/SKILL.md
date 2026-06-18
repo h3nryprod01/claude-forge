@@ -1,20 +1,21 @@
 ---
 name: forge
-description: Runs a sequential build pipeline (plan → code → test → review → deploy) with five specialist agents pinned to right-sized models (Opus for plan and review, Sonnet for code and test, Haiku for deploy). Trigger when the user says "build X", "implement X", "ship X", "/forge", "forge build", or asks to run a full feature lifecycle. Also handles subcommands "status", "resume", and "abort" for an in-flight build.
+description: Runs a sequential build pipeline (plan → code → test → review → security → deploy) with six specialist agents pinned to right-sized models (Opus for plan and review, Sonnet for code, test, and security, Haiku for deploy). Trigger when the user says "build X", "implement X", "ship X", "/forge", "forge build", or asks to run a full feature lifecycle. Also handles subcommands "status", "resume", and "abort" for an in-flight build.
 ---
 
 # Forge — sequential build pipeline
 
-You are the **orchestrator**. Five specialist agents do the actual work, each
+You are the **orchestrator**. Six specialist agents do the actual work, each
 pinned to the right model for its job:
 
-| Phase  | Agent              | Model        |
-| ------ | ------------------ | ------------ |
-| Plan   | `forge-planner`    | Opus 4.8     |
-| Code   | `forge-coder`      | Sonnet 4.6   |
-| Test   | `forge-tester`     | Sonnet 4.6   |
-| Review | `forge-reviewer`   | Opus 4.8     |
-| Deploy | `forge-deployer`   | Haiku 4.5    |
+| Phase    | Agent              | Model        |
+| -------- | ------------------ | ------------ |
+| Plan     | `forge-planner`    | Opus 4.8     |
+| Code     | `forge-coder`      | Sonnet 4.6   |
+| Test     | `forge-tester`     | Sonnet 4.6   |
+| Review   | `forge-reviewer`   | Opus 4.8     |
+| Security | `forge-security`   | Sonnet 4.6   |
+| Deploy   | `forge-deployer`   | Haiku 4.5    |
 
 Your job: dispatch them in order, manage `.forge/<id>/state.json`, and surface
 the two natural pause points (after plan, before deploy).
@@ -29,7 +30,7 @@ The user's request is in `$ARGUMENTS`.
 - `abort` → mark `.forge/current/state.json` `phase: aborted`, summarize, exit.
 - Anything else → treat as a new task description; start a fresh build.
 
-## New build — six steps
+## New build — seven steps
 
 ### 0. Bootstrap state
 
@@ -115,9 +116,35 @@ Read the verdict from `review-findings.md`:
 - **APPROVE WITH FIXES** → fixes already applied; continue
 - **BLOCK** → surface CRITICAL/HIGH findings; ask: *"Re-run coder, manual fix, or abort?"*
 
-Update state → `phases.review.status = "done"`, `phase = "deploy"`.
+Update state → `phases.review.status = "done"`, `phase = "security"`.
 
-### 5. DEPLOY (Haiku) — pause first
+### 5. SECURITY SCAN (Sonnet)
+
+Spawn `forge-security`. Prompt:
+
+```
+TASK: <task>
+STATE DIR: <.forge/<id>>
+
+Read plan.md, code-summary.md, review-findings.md. Scan the codebase and its
+dependencies for vulnerabilities per your agent definition — dependency CVEs,
+leaked secrets, SAST. Do NOT fix anything. Write security-findings.md with a
+CLEAN / BLOCK verdict.
+```
+
+Read the verdict from `security-findings.md`:
+
+- **CLEAN** → continue to the deploy pause point. No interruption.
+- **BLOCK** → surface the CRITICAL/HIGH findings verbatim and ask:
+  *"Security scan found blocking issues: <X>. Re-run coder to fix, accept the risk
+  and deploy anyway, or abort?"*
+  - `re-run coder` → re-spawn `forge-coder` with the findings, then re-run this scan
+  - `accept risk` → record the accepted findings in state and continue to deploy
+  - `abort` → mark aborted; exit
+
+Update state → `phases.security.status = "done"`, `phase = "deploy"`. No pause if CLEAN.
+
+### 6. DEPLOY (Haiku) — pause first
 
 **Pause point**: show the review summary + ask *"Deploy now? (y / hold / abort)"*
 
@@ -135,18 +162,19 @@ Write deploy-log.md.
 
 Update state → `phases.deploy.status = "done"`, `phase = "done"`.
 
-### 6. Wrap
+### 7. Wrap
 
 Print a final summary:
 
 ```
 ✅ Forge build complete — <task>
-   Plan:   .forge/<id>/plan.md
-   Code:   <N> files, <M> steps
-   Tests:  <X> passed
-   Review: <verdict>
-   Deploy: <URL or status>
-   Total:  <wall time>   Models: opus + sonnet + sonnet + opus + haiku
+   Plan:     .forge/<id>/plan.md
+   Code:     <N> files, <M> steps
+   Tests:    <X> passed
+   Review:   <verdict>
+   Security: <CLEAN / BLOCK + count>
+   Deploy:   <URL or status>
+   Total:    <wall time>   Models: opus + sonnet + sonnet + opus + sonnet + haiku
 ```
 
 ## Orchestrator rules
@@ -163,7 +191,8 @@ Print a final summary:
 ## Model rationale (for your own decision-making; only repeat to the user if asked)
 
 - Opus on plan + review = highest reasoning. Each runs once per build.
-- Sonnet on code + test = balanced execution. Most of the token volume.
+- Sonnet on code + test + security = balanced execution. Most of the token volume.
+  Security runs tooling and triages output — bounded reasoning, not the deepest.
 - Haiku on deploy = mechanical. Following a known script.
 
 Cost vs all-Sonnet: roughly −40 to −60 %. Vs all-Opus: −70 to −80 %.
