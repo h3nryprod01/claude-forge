@@ -2,6 +2,30 @@
 
 All notable changes to Forge are documented in this file. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [0.3.0] — 2026-06-18
+
+### Added
+
+- `forge-security` agent (Sonnet 4.6) — a dedicated security/vulnerability scan
+  phase between Review and Deploy. Scans dependencies for known CVEs (`npm audit`,
+  `pip-audit`, `cargo audit`, `govulncheck`, `osv-scanner`), the tree for leaked
+  secrets (`gitleaks` / `trufflehog`, grep fallback), and code for SAST findings
+  (`semgrep`). Triages by real exploitability; writes `security-findings.md` with a
+  CLEAN / BLOCK verdict.
+- The scan is a conditional gate: CLEAN flows to the deploy pause; CRITICAL / HIGH
+  halts and asks (re-run coder / accept risk / abort). Report-only — never
+  auto-bumps dependencies or rotates secrets.
+- `security` phase added to `state.json` (init-state.sh) and `/forge status`.
+
+### Changed
+
+- Pipeline is now **plan → code → test → review → security → deploy** (6 agents).
+  Merges the security phase (was a parallel 0.2.0 line) with the `claude-opus-4-8`
+  pin. Updated SKILL.md, README, plugin.json, and marketplace.json.
+- `forge-planner` and `forge-reviewer` pinned to `claude-opus-4-8` (Opus 4.8) in the
+  security variant too — it previously still used the unpinned `opus` alias, which
+  resolved to Opus 4.5. Now Opus 4.8 everywhere.
+
 ## [0.2.0] — 2026-05-28
 
 ### Changed

@@ -1,8 +1,8 @@
 # Forge — sequential build pipeline plugin
 
-5 specialized agents · 5 right-sized models · 1 slash command.
+6 specialized agents · right-sized models · 1 slash command.
 
-When you say *"build X"*, Forge runs **plan → code → test → review → deploy** in order.
+When you say *"build X"*, Forge runs **plan → code → test → review → security → deploy** in order.
 Each phase uses the model best suited to its job — Opus for hard reasoning, Sonnet for
 execution, Haiku for mechanical work. You stay in the loop at the natural pause points
 (after plan, before deploy).
@@ -19,6 +19,7 @@ and right-sizes the model.
 | Code | `forge-coder` | **Sonnet 4.6** | files edited / created |
 | Test | `forge-tester` | **Sonnet 4.6** | tests passing |
 | Review | `forge-reviewer` | **Opus 4.8** | findings + auto-fix safe items |
+| Security | `forge-security` | **Sonnet 4.6** | `security-findings.md` (CVEs, secrets, SAST) |
 | Deploy | `forge-deployer` | **Haiku 4.5** | URL + status |
 
 Approximate cost vs. all-Sonnet: −40 to −60 %. Vs. all-Opus: −70 to −80 %.
@@ -73,9 +74,10 @@ The orchestrator (main Claude) then:
 2. Spawns `forge-coder` → implements the plan.
 3. Spawns `forge-tester` → writes & runs tests.
 4. Spawns `forge-reviewer` → critical review; auto-applies LOW / MEDIUM fixes; surfaces HIGH / CRITICAL.
-5. **Pauses for your OK before deploy.**
-6. Spawns `forge-deployer` → ships.
-7. Writes `.forge/<id>/state.json` done.
+5. Spawns `forge-security` → scans deps + codebase for CVEs, secrets, SAST findings. **Halts only if it finds CRITICAL / HIGH.**
+6. **Pauses for your OK before deploy.**
+7. Spawns `forge-deployer` → ships.
+8. Writes `.forge/<id>/state.json` done.
 
 ## Sub-commands
 
@@ -98,6 +100,7 @@ State is per-project, under `.forge/<task-id>/`:
     ├── code-summary.md
     ├── test-summary.md
     ├── review-findings.md
+    ├── security-findings.md
     └── deploy-log.md
 ```
 
@@ -113,8 +116,9 @@ State is per-project, under `.forge/<task-id>/`:
     "plan":   { "status": "done", "model": "opus",   "agent": "forge-planner",   "ended": "..." },
     "code":   { "status": "in_progress", "model": "sonnet", "agent": "forge-coder", "started": "..." },
     "test":   { "status": "pending" },
-    "review": { "status": "pending" },
-    "deploy": { "status": "pending" }
+    "review":   { "status": "pending" },
+    "security": { "status": "pending" },
+    "deploy":   { "status": "pending" }
   }
 }
 ```

@@ -21,8 +21,9 @@ cat > "$DIR/state.json" <<EOF
     "plan":   { "status": "in_progress", "model": "opus",   "agent": "forge-planner",  "started": "$NOW" },
     "code":   { "status": "pending",     "model": "sonnet", "agent": "forge-coder"    },
     "test":   { "status": "pending",     "model": "sonnet", "agent": "forge-tester"   },
-    "review": { "status": "pending",     "model": "opus",   "agent": "forge-reviewer" },
-    "deploy": { "status": "pending",     "model": "haiku",  "agent": "forge-deployer" }
+    "review":   { "status": "pending",   "model": "opus",   "agent": "forge-reviewer" },
+    "security": { "status": "pending",   "model": "sonnet", "agent": "forge-security" },
+    "deploy":   { "status": "pending",   "model": "haiku",  "agent": "forge-deployer" }
   }
 }
 EOF
