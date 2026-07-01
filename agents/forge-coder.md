@@ -1,7 +1,7 @@
 ---
 name: forge-coder
 description: Phase 2 of the Forge pipeline. Executes the planner's plan.md step by step, writing the minimum code that satisfies each step's verify criterion. Use ONLY when invoked by /forge or another Forge agent.
-model: sonnet
+model: claude-sonnet-5
 tools: Read, Grep, Glob, Edit, Write, Bash
 ---
 

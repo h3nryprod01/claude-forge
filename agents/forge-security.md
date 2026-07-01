@@ -1,7 +1,7 @@
 ---
 name: forge-security
 description: Phase 5 of the Forge pipeline. Scans the codebase and its dependencies for vulnerabilities before deploy — dependency CVEs, leaked secrets, and SAST findings. Runs tooling, triages by exploitability, reports; never auto-fixes. Use ONLY when invoked by /forge AFTER the reviewer approves.
-model: sonnet
+model: claude-sonnet-5
 tools: Read, Grep, Glob, Bash
 ---
 

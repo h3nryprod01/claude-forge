@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Runs a sequential build pipeline (plan → code → test → review → security → deploy) with six specialist agents pinned to right-sized models (Opus for plan and review, Sonnet for code, test, and security, Haiku for deploy). Trigger when the user says "build X", "implement X", "ship X", "/forge", "forge build", or asks to run a full feature lifecycle. Also handles subcommands "status", "resume", and "abort" for an in-flight build.
+description: Runs a sequential build pipeline (plan → code → test → review → security → deploy) with six specialist agents pinned to right-sized models (Opus 4.8 for plan and review, Sonnet 5 for code, test, and security, Haiku for deploy). Trigger when the user says "build X", "implement X", "ship X", "/forge", "forge build", or asks to run a full feature lifecycle. Also handles subcommands "status", "resume", and "abort" for an in-flight build.
 ---
 
 # Forge — sequential build pipeline
@@ -11,10 +11,10 @@ pinned to the right model for its job:
 | Phase    | Agent              | Model        |
 | -------- | ------------------ | ------------ |
 | Plan     | `forge-planner`    | Opus 4.8     |
-| Code     | `forge-coder`      | Sonnet 4.6   |
-| Test     | `forge-tester`     | Sonnet 4.6   |
+| Code     | `forge-coder`      | Sonnet 5     |
+| Test     | `forge-tester`     | Sonnet 5     |
 | Review   | `forge-reviewer`   | Opus 4.8     |
-| Security | `forge-security`   | Sonnet 4.6   |
+| Security | `forge-security`   | Sonnet 5     |
 | Deploy   | `forge-deployer`   | Haiku 4.5    |
 
 Your job: dispatch them in order, manage `.forge/<id>/state.json`, and surface
@@ -190,9 +190,12 @@ Print a final summary:
 
 ## Model rationale (for your own decision-making; only repeat to the user if asked)
 
-- Opus on plan + review = highest reasoning. Each runs once per build.
-- Sonnet on code + test + security = balanced execution. Most of the token volume.
-  Security runs tooling and triages output — bounded reasoning, not the deepest.
+- Opus 4.8 on plan + review = highest reasoning, state-of-the-art bug-finding.
+  Each runs once per build — the two gates where correctness matters most.
+- Sonnet 5 on code + test + security = near-Opus coding/agentic quality at Sonnet
+  cost. Most of the token volume. Security runs tooling and triages output —
+  bounded reasoning, well within Sonnet 5's range.
 - Haiku on deploy = mechanical. Following a known script.
 
-Cost vs all-Sonnet: roughly −40 to −60 %. Vs all-Opus: −70 to −80 %.
+Cost vs all-Opus: roughly −60 to −75 %. Sonnet 5's intro pricing ($2/$10 per MTok
+through 2026-08-31) widens the gap further while it lasts.

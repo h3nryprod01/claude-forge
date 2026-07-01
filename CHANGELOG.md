@@ -2,6 +2,25 @@
 
 All notable changes to Forge are documented in this file. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [0.4.0] — 2026-07-01
+
+### Changed
+
+- **`forge-coder`, `forge-tester`, and `forge-security` now pinned to `claude-sonnet-5`**
+  (Sonnet 5), up from the bare `sonnet` alias that resolved to Sonnet 4.6. Sonnet 5 reaches
+  near-Opus quality on coding and agentic work at Sonnet pricing ($3/$15 per MTok, with a
+  $2/$10 introductory rate through 2026-08-31), so the three execution phases move up a tier
+  without changing the cost profile.
+- Pinned the exact ID (`claude-sonnet-5`) rather than the `sonnet` alias — matching the
+  0.2.0/0.3.0 decision to pin `claude-opus-4-8` — so the alias resolving to an older Sonnet
+  can't silently downgrade these phases.
+- **`forge-planner` and `forge-reviewer` stay on `claude-opus-4-8`** (Opus 4.8). Plan and
+  review are the two gates where correctness matters most — Opus 4.8 remains state-of-the-art
+  on long-horizon reasoning and bug-finding, and each runs only once per build.
+- `forge-deployer` stays on Haiku (mechanical deploy work).
+- Refreshed the model tables and rationale in README.md and SKILL.md, and the pipeline
+  descriptions in plugin.json / marketplace.json.
+
 ## [0.3.0] — 2026-06-18
 
 ### Added
