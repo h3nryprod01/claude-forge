@@ -3,9 +3,9 @@
 6 specialized agents · right-sized models · 1 slash command.
 
 When you say *"build X"*, Forge runs **plan → code → test → review → security → deploy** in order.
-Each phase uses the model best suited to its job — Opus for hard reasoning, Sonnet for
-execution, Haiku for mechanical work. You stay in the loop at the natural pause points
-(after plan, before deploy).
+Each phase uses the model best suited to its job — Opus 4.8 for the hard reasoning gates
+(plan, review), Sonnet 5 for everything else (code, test, security, deploy). You stay in
+the loop at the natural pause points (after plan, before deploy).
 
 ## Why this exists
 
@@ -16,13 +16,16 @@ and right-sizes the model.
 | Phase | Agent | Model | Output |
 |---|---|---|---|
 | Plan | `forge-planner` | **Opus 4.8** | `plan.md` with checkboxes |
-| Code | `forge-coder` | **Sonnet 4.6** | files edited / created |
-| Test | `forge-tester` | **Sonnet 4.6** | tests passing |
+| Code | `forge-coder` | **Sonnet 5** | files edited / created |
+| Test | `forge-tester` | **Sonnet 5** | tests passing |
 | Review | `forge-reviewer` | **Opus 4.8** | findings + auto-fix safe items |
-| Security | `forge-security` | **Sonnet 4.6** | `security-findings.md` (CVEs, secrets, SAST) |
-| Deploy | `forge-deployer` | **Haiku 4.5** | URL + status |
+| Security | `forge-security` | **Sonnet 5** | `security-findings.md` (CVEs, secrets, SAST) |
+| Deploy | `forge-deployer` | **Sonnet 5** | URL + status |
 
-Approximate cost vs. all-Sonnet: −40 to −60 %. Vs. all-Opus: −70 to −80 %.
+Sonnet 5 reaches near-Opus quality on coding and agentic work at Sonnet pricing, so every
+phase except the two hardest reasoning gates (plan, review) runs on it — keeping one model
+across the execution half of the pipeline also maximizes prompt-cache reuse. Approximate
+cost vs. all-Opus: −60 to −75 %.
 
 ## Install
 
@@ -131,9 +134,13 @@ Edit `agents/forge-*.md` frontmatter:
 ---
 name: forge-coder
 description: ...
-model: sonnet      # opus | sonnet | haiku
+model: claude-sonnet-5   # pin an exact ID (claude-opus-4-8, claude-sonnet-5) or use an alias (opus, sonnet, haiku)
 ---
 ```
+
+Pin exact model IDs rather than the bare `opus`/`sonnet` aliases — an alias resolves to
+whatever the current default is (e.g. `sonnet` → Sonnet 4.6), so pinning `claude-sonnet-5`
+is what actually selects Sonnet 5.
 
 ## When NOT to use Forge
 

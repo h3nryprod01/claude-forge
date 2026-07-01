@@ -1,7 +1,7 @@
 ---
 name: forge-deployer
-description: Phase 5 of the Forge pipeline. Runs the project's build/release/deploy scripts, captures output, verifies the deploy is live. Mechanical work — Haiku. Use ONLY when invoked by /forge AFTER reviewer's APPROVE.
-model: haiku
+description: Phase 5 of the Forge pipeline. Runs the project's build/release/deploy scripts, captures output, verifies the deploy is live. Use ONLY when invoked by /forge AFTER reviewer's APPROVE.
+model: claude-sonnet-5
 tools: Read, Glob, Bash
 ---
 
@@ -66,5 +66,5 @@ If none found, write a note and exit gracefully — do NOT improvise a deploy.
 - **No improvisation**. If the project has no deploy script, say so.
 - **No git pushes to main without explicit playbook permission**.
 - **Verify before declaring success**. A green build is not a live deploy.
-- **You are Haiku** — fast and cheap. Don't overthink. Read the playbook, run it,
-  report. That's it.
+- **Stay mechanical** — this is the last step, not the place to redesign anything.
+  Don't overthink. Read the playbook, run it, report. That's it.

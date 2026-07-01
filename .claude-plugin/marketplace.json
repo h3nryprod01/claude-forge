@@ -8,8 +8,8 @@
     {
       "name": "forge",
       "source": "./",
-      "description": "Sequential build pipeline — plan → code → test → review → security → deploy — with auto-routed Opus/Sonnet/Haiku models per phase.",
-      "version": "0.3.0",
+      "description": "Sequential build pipeline — plan → code → test → review → security → deploy — with auto-routed Opus 4.8 (plan, review) and Sonnet 5 (code, test, security, deploy) models per phase.",
+      "version": "0.5.0",
       "category": "agents",
       "keywords": ["pipeline", "agents", "build", "tdd", "security", "orchestration"]
     }
