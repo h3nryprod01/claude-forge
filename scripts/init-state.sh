@@ -23,7 +23,7 @@ cat > "$DIR/state.json" <<EOF
     "test":   { "status": "pending",     "model": "sonnet", "agent": "forge-tester"   },
     "review":   { "status": "pending",   "model": "opus",   "agent": "forge-reviewer" },
     "security": { "status": "pending",   "model": "sonnet", "agent": "forge-security" },
-    "deploy":   { "status": "pending",   "model": "haiku",  "agent": "forge-deployer" }
+    "deploy":   { "status": "pending",   "model": "sonnet", "agent": "forge-deployer" }
   }
 }
 EOF

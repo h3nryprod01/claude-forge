@@ -2,6 +2,21 @@
 
 All notable changes to Forge are documented in this file. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [0.5.0] — 2026-07-01
+
+### Changed
+
+- **`forge-deployer` moved from Haiku to `claude-sonnet-5`** (Sonnet 5). Deploy is
+  mechanical, but running it on the same model as the rest of the execution half of the
+  pipeline (code, test, security) keeps prompt-cache reuse high and avoids a model swap for
+  the final step — at Sonnet 5's intro pricing the cost delta over Haiku is small.
+- The pipeline now uses just two tiers: **Opus 4.8** for the two reasoning gates (plan,
+  review) and **Sonnet 5** for everything else (code, test, security, deploy). Haiku is no
+  longer used.
+- Refreshed model tables, headings, and rationale in README.md and SKILL.md; updated the
+  deploy phase label in init-state.sh and the pipeline descriptions in plugin.json /
+  marketplace.json.
+
 ## [0.4.0] — 2026-07-01
 
 ### Changed

@@ -3,9 +3,9 @@
 6 specialized agents · right-sized models · 1 slash command.
 
 When you say *"build X"*, Forge runs **plan → code → test → review → security → deploy** in order.
-Each phase uses the model best suited to its job — Opus 4.8 for hard reasoning, Sonnet 5 for
-execution, Haiku for mechanical work. You stay in the loop at the natural pause points
-(after plan, before deploy).
+Each phase uses the model best suited to its job — Opus 4.8 for the hard reasoning gates
+(plan, review), Sonnet 5 for everything else (code, test, security, deploy). You stay in
+the loop at the natural pause points (after plan, before deploy).
 
 ## Why this exists
 
@@ -20,11 +20,12 @@ and right-sizes the model.
 | Test | `forge-tester` | **Sonnet 5** | tests passing |
 | Review | `forge-reviewer` | **Opus 4.8** | findings + auto-fix safe items |
 | Security | `forge-security` | **Sonnet 5** | `security-findings.md` (CVEs, secrets, SAST) |
-| Deploy | `forge-deployer` | **Haiku 4.5** | URL + status |
+| Deploy | `forge-deployer` | **Sonnet 5** | URL + status |
 
-Sonnet 5 reaches near-Opus quality on coding and agentic work at Sonnet pricing, so the
-three execution phases run on it while the two hardest reasoning gates (plan, review) stay
-on Opus 4.8. Approximate cost vs. all-Opus: −60 to −75 %.
+Sonnet 5 reaches near-Opus quality on coding and agentic work at Sonnet pricing, so every
+phase except the two hardest reasoning gates (plan, review) runs on it — keeping one model
+across the execution half of the pipeline also maximizes prompt-cache reuse. Approximate
+cost vs. all-Opus: −60 to −75 %.
 
 ## Install
 
@@ -133,7 +134,7 @@ Edit `agents/forge-*.md` frontmatter:
 ---
 name: forge-coder
 description: ...
-model: claude-sonnet-5   # pin an exact ID (claude-opus-4-8, claude-sonnet-5) or an alias (haiku)
+model: claude-sonnet-5   # pin an exact ID (claude-opus-4-8, claude-sonnet-5) or use an alias (opus, sonnet, haiku)
 ---
 ```
 

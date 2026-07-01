@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Runs a sequential build pipeline (plan → code → test → review → security → deploy) with six specialist agents pinned to right-sized models (Opus 4.8 for plan and review, Sonnet 5 for code, test, and security, Haiku for deploy). Trigger when the user says "build X", "implement X", "ship X", "/forge", "forge build", or asks to run a full feature lifecycle. Also handles subcommands "status", "resume", and "abort" for an in-flight build.
+description: Runs a sequential build pipeline (plan → code → test → review → security → deploy) with six specialist agents pinned to right-sized models (Opus 4.8 for plan and review, Sonnet 5 for code, test, security, and deploy). Trigger when the user says "build X", "implement X", "ship X", "/forge", "forge build", or asks to run a full feature lifecycle. Also handles subcommands "status", "resume", and "abort" for an in-flight build.
 ---
 
 # Forge — sequential build pipeline
@@ -15,7 +15,7 @@ pinned to the right model for its job:
 | Test     | `forge-tester`     | Sonnet 5     |
 | Review   | `forge-reviewer`   | Opus 4.8     |
 | Security | `forge-security`   | Sonnet 5     |
-| Deploy   | `forge-deployer`   | Haiku 4.5    |
+| Deploy   | `forge-deployer`   | Sonnet 5     |
 
 Your job: dispatch them in order, manage `.forge/<id>/state.json`, and surface
 the two natural pause points (after plan, before deploy).
@@ -144,7 +144,7 @@ Read the verdict from `security-findings.md`:
 
 Update state → `phases.security.status = "done"`, `phase = "deploy"`. No pause if CLEAN.
 
-### 6. DEPLOY (Haiku) — pause first
+### 6. DEPLOY (Sonnet 5) — pause first
 
 **Pause point**: show the review summary + ask *"Deploy now? (y / hold / abort)"*
 
@@ -174,7 +174,7 @@ Print a final summary:
    Review:   <verdict>
    Security: <CLEAN / BLOCK + count>
    Deploy:   <URL or status>
-   Total:    <wall time>   Models: opus + sonnet + sonnet + opus + sonnet + haiku
+   Total:    <wall time>   Models: opus + sonnet + sonnet + opus + sonnet + sonnet
 ```
 
 ## Orchestrator rules
@@ -195,7 +195,9 @@ Print a final summary:
 - Sonnet 5 on code + test + security = near-Opus coding/agentic quality at Sonnet
   cost. Most of the token volume. Security runs tooling and triages output —
   bounded reasoning, well within Sonnet 5's range.
-- Haiku on deploy = mechanical. Following a known script.
+- Sonnet 5 on deploy = mechanical, but keeping one model across the execution half
+  of the pipeline maximizes prompt-cache reuse and avoids a model swap for the last
+  step. Following a known script.
 
 Cost vs all-Opus: roughly −60 to −75 %. Sonnet 5's intro pricing ($2/$10 per MTok
 through 2026-08-31) widens the gap further while it lasts.
