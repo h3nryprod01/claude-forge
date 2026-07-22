@@ -18,12 +18,13 @@ cat > "$DIR/state.json" <<EOF
   "started": "$NOW",
   "phase": "plan",
   "phases": {
-    "plan":   { "status": "in_progress", "model": "opus",   "agent": "forge-planner",  "started": "$NOW" },
-    "code":   { "status": "pending",     "model": "sonnet", "agent": "forge-coder"    },
-    "test":   { "status": "pending",     "model": "sonnet", "agent": "forge-tester"   },
-    "review":   { "status": "pending",   "model": "opus",   "agent": "forge-reviewer" },
-    "security": { "status": "pending",   "model": "sonnet", "agent": "forge-security" },
-    "deploy":   { "status": "pending",   "model": "sonnet", "agent": "forge-deployer" }
+    "plan":     { "status": "in_progress", "model": "fable",  "agent": "forge-planner",  "started": "$NOW" },
+    "design":   { "status": "pending",     "model": "fable",  "agent": "forge-designer" },
+    "code":     { "status": "pending",     "model": "sonnet", "agent": "forge-coder"    },
+    "test":     { "status": "pending",     "model": "sonnet", "agent": "forge-tester"   },
+    "review":   { "status": "pending",     "model": "fable",  "agent": "forge-reviewer" },
+    "security": { "status": "pending",     "model": "opus",   "agent": "forge-security" },
+    "deploy":   { "status": "pending",     "model": "sonnet", "agent": "forge-deployer" }
   }
 }
 EOF

@@ -2,6 +2,33 @@
 
 All notable changes to Forge are documented in this file. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [0.6.0] — 2026-07-22
+
+### Added
+
+- **Restored the `design` phase** (`forge-designer`, phase 2) — removed in an earlier
+  version, now back in the pipeline and **rebuilt without Google Stitch**. It renders a
+  self-contained HTML/CSS mockup of every UI surface with realistic mock data (invoking
+  the `design-taste` skill), screenshots each one for a real visual gate, and — when the
+  stack is React + shadcn/ui — also scaffolds real shadcn component code for the coder
+  (via `ui-ux-pro-max`). Auto-skips backend/no-UI tasks. The pipeline is now seven phases:
+  plan → design → code → test → review → security → deploy, with three pause points
+  (after plan, after design, before deploy).
+- **Per-agent `effort` frontmatter** on every phase — `xhigh` for the judgment phases
+  (plan, design, review), `max` for code and security, `medium` for test and deploy.
+
+### Changed
+
+- **Re-routed models by phase**: **Fable 5** for the ideation/judgment phases (plan,
+  design, review), **Opus 4.8** for security (the last gate before deploy), **Sonnet 5**
+  for the execution phases (code, test, deploy). Replaces the prior Opus-4.8 / Sonnet-5
+  two-tier split.
+- Updated `init-state.sh` (seeds the `design` phase + refreshed model labels), `status.sh`
+  (shows `design`), README.md, SKILL.md, and the plugin.json / marketplace.json
+  descriptions.
+- Synced each agent's "you're on <model>" self-description and shifted the phase numbers in
+  the agent descriptions to match the seven-phase order.
+
 ## [0.5.0] — 2026-07-01
 
 ### Changed

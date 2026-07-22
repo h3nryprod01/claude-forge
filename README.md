@@ -1,11 +1,12 @@
 # Forge — sequential build pipeline plugin
 
-6 specialized agents · right-sized models · 1 slash command.
+7 specialized agents · right-sized models & effort · 1 slash command.
 
-When you say *"build X"*, Forge runs **plan → code → test → review → security → deploy** in order.
-Each phase uses the model best suited to its job — Opus 4.8 for the hard reasoning gates
-(plan, review), Sonnet 5 for everything else (code, test, security, deploy). You stay in
-the loop at the natural pause points (after plan, before deploy).
+When you say *"build X"*, Forge runs **plan → design → code → test → review → security → deploy** in order.
+Each phase uses the model and reasoning effort best suited to its job — Fable 5 for the
+judgment phases (plan, design, review), Opus 4.8 for the security gate, Sonnet 5 for the
+execution phases (code, test, deploy). You stay in the loop at the natural pause points
+(after plan, after design, before deploy).
 
 ## Why this exists
 
@@ -13,19 +14,20 @@ Most coding agent runs are spent doing 5 jobs sequentially with one model. That 
 money on the easy parts and under-thinks the hard parts. Forge enforces the lifecycle
 and right-sizes the model.
 
-| Phase | Agent | Model | Output |
-|---|---|---|---|
-| Plan | `forge-planner` | **Opus 4.8** | `plan.md` with checkboxes |
-| Code | `forge-coder` | **Sonnet 5** | files edited / created |
-| Test | `forge-tester` | **Sonnet 5** | tests passing |
-| Review | `forge-reviewer` | **Opus 4.8** | findings + auto-fix safe items |
-| Security | `forge-security` | **Sonnet 5** | `security-findings.md` (CVEs, secrets, SAST) |
-| Deploy | `forge-deployer` | **Sonnet 5** | URL + status |
+| Phase | Agent | Model | Effort | Output |
+|---|---|---|---|---|
+| Plan | `forge-planner` | **Fable 5** | xhigh | `plan.md` with checkboxes |
+| Design | `forge-designer` | **Fable 5** | xhigh | rendered HTML mockups + tokens (shadcn code if applicable), human-approved |
+| Code | `forge-coder` | **Sonnet 5** | max | files edited / created |
+| Test | `forge-tester` | **Sonnet 5** | medium | tests passing |
+| Review | `forge-reviewer` | **Fable 5** | xhigh | findings + auto-fix safe items |
+| Security | `forge-security` | **Opus 4.8** | max | `security-findings.md` (CVEs, secrets, SAST) |
+| Deploy | `forge-deployer` | **Sonnet 5** | medium | URL + status |
 
-Sonnet 5 reaches near-Opus quality on coding and agentic work at Sonnet pricing, so every
-phase except the two hardest reasoning gates (plan, review) runs on it — keeping one model
-across the execution half of the pipeline also maximizes prompt-cache reuse. Approximate
-cost vs. all-Opus: −60 to −75 %.
+Fable 5 runs the ideation/judgment phases (plan, design, review) at xhigh effort. Opus 4.8
+takes the security gate at max effort — high-stakes triage, once per build. Sonnet 5 runs
+the execution phases (code at max, test and deploy at medium), keeping one model across most
+of the execution half to maximize prompt-cache reuse.
 
 ## Install
 
@@ -74,13 +76,14 @@ Cowork users can also just say it naturally:
 The orchestrator (main Claude) then:
 
 1. Spawns `forge-planner` → produces `.forge/<id>/plan.md`. **Pauses for your OK.**
-2. Spawns `forge-coder` → implements the plan.
-3. Spawns `forge-tester` → writes & runs tests.
-4. Spawns `forge-reviewer` → critical review; auto-applies LOW / MEDIUM fixes; surfaces HIGH / CRITICAL.
-5. Spawns `forge-security` → scans deps + codebase for CVEs, secrets, SAST findings. **Halts only if it finds CRITICAL / HIGH.**
-6. **Pauses for your OK before deploy.**
-7. Spawns `forge-deployer` → ships.
-8. Writes `.forge/<id>/state.json` done.
+2. Spawns `forge-designer` → renders a mockup of every UI surface (self-contained HTML, or shadcn when the stack fits). **Pauses for your OK.** (Skipped for no-UI tasks.)
+3. Spawns `forge-coder` → implements the plan against the approved designs.
+4. Spawns `forge-tester` → writes & runs tests.
+5. Spawns `forge-reviewer` → critical review; auto-applies LOW / MEDIUM fixes; surfaces HIGH / CRITICAL.
+6. Spawns `forge-security` → scans deps + codebase for CVEs, secrets, SAST findings. **Halts only if it finds CRITICAL / HIGH.**
+7. **Pauses for your OK before deploy.**
+8. Spawns `forge-deployer` → ships.
+9. Writes `.forge/<id>/state.json` done.
 
 ## Sub-commands
 
@@ -116,9 +119,10 @@ State is per-project, under `.forge/<task-id>/`:
   "started": "2026-05-27T16:00:00Z",
   "phase": "code",
   "phases": {
-    "plan":   { "status": "done", "model": "opus",   "agent": "forge-planner",   "ended": "..." },
-    "code":   { "status": "in_progress", "model": "sonnet", "agent": "forge-coder", "started": "..." },
-    "test":   { "status": "pending" },
+    "plan":     { "status": "done", "model": "fable",  "agent": "forge-planner",  "ended": "..." },
+    "design":   { "status": "done", "model": "fable",  "agent": "forge-designer", "ended": "..." },
+    "code":     { "status": "in_progress", "model": "sonnet", "agent": "forge-coder", "started": "..." },
+    "test":     { "status": "pending" },
     "review":   { "status": "pending" },
     "security": { "status": "pending" },
     "deploy":   { "status": "pending" }
@@ -134,13 +138,15 @@ Edit `agents/forge-*.md` frontmatter:
 ---
 name: forge-coder
 description: ...
-model: claude-sonnet-5   # pin an exact ID (claude-opus-4-8, claude-sonnet-5) or use an alias (opus, sonnet, haiku)
+model: claude-sonnet-5   # pin an exact ID (claude-opus-4-8, claude-sonnet-5, claude-fable-5) or an alias (opus, sonnet, haiku, fable)
+effort: max              # low | medium | high | xhigh | max — reasoning depth for this phase
 ---
 ```
 
 Pin exact model IDs rather than the bare `opus`/`sonnet` aliases — an alias resolves to
 whatever the current default is (e.g. `sonnet` → Sonnet 4.6), so pinning `claude-sonnet-5`
-is what actually selects Sonnet 5.
+is what actually selects Sonnet 5. The `effort` field tunes reasoning depth per phase
+(available levels depend on the model).
 
 ## When NOT to use Forge
 

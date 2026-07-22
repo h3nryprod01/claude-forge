@@ -1,7 +1,7 @@
 {
   "name": "forge",
-  "version": "0.5.0",
-  "description": "Sequential build pipeline — plan → code → test → review → security → deploy — with auto-routed Opus 4.8 (plan, review) and Sonnet 5 (code, test, security, deploy) models per phase.",
+  "version": "0.6.0",
+  "description": "Sequential build pipeline — plan → design → code → test → review → security → deploy — with auto-routed Fable 5 (plan, design, review), Opus 4.8 (security), and Sonnet 5 (code, test, deploy) models per phase, each at tuned reasoning effort. The design phase renders a mockup of every UI surface (HTML/CSS, or real shadcn/ui code when the stack fits) for human approval before coding.",
   "author": {
     "name": "Nguyen Phuc Uong",
     "url": "https://github.com/h3nryprod01"
@@ -9,5 +9,5 @@
   "license": "MIT",
   "homepage": "https://github.com/h3nryprod01/claude-forge",
   "repository": "https://github.com/h3nryprod01/claude-forge",
-  "keywords": ["pipeline", "agents", "build", "tdd", "ci", "security", "orchestration", "opus", "sonnet"]
+  "keywords": ["pipeline", "agents", "build", "tdd", "ci", "security", "design", "shadcn", "orchestration", "fable", "opus", "sonnet"]
 }
