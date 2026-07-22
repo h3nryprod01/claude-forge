@@ -17,7 +17,7 @@ and right-sizes the model.
 | Phase | Agent | Model | Effort | Output |
 |---|---|---|---|---|
 | Plan | `forge-planner` | **Fable 5** | xhigh | `plan.md` with checkboxes |
-| Design | `forge-designer` | **Fable 5** | xhigh | Stitch mockups + tokens, human-approved |
+| Design | `forge-designer` | **Fable 5** | xhigh | rendered HTML mockups + tokens (shadcn code if applicable), human-approved |
 | Code | `forge-coder` | **Sonnet 5** | max | files edited / created |
 | Test | `forge-tester` | **Sonnet 5** | medium | tests passing |
 | Review | `forge-reviewer` | **Fable 5** | xhigh | findings + auto-fix safe items |
@@ -76,7 +76,7 @@ Cowork users can also just say it naturally:
 The orchestrator (main Claude) then:
 
 1. Spawns `forge-planner` → produces `.forge/<id>/plan.md`. **Pauses for your OK.**
-2. Spawns `forge-designer` → mocks every UI surface in Google Stitch. **Pauses for your OK.** (Skipped for no-UI tasks.)
+2. Spawns `forge-designer` → renders a mockup of every UI surface (self-contained HTML, or shadcn when the stack fits). **Pauses for your OK.** (Skipped for no-UI tasks.)
 3. Spawns `forge-coder` → implements the plan against the approved designs.
 4. Spawns `forge-tester` → writes & runs tests.
 5. Spawns `forge-reviewer` → critical review; auto-applies LOW / MEDIUM fixes; surfaces HIGH / CRITICAL.

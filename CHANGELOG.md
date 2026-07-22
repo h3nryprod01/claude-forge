@@ -7,11 +7,13 @@ All notable changes to Forge are documented in this file. Format: [Keep a Change
 ### Added
 
 - **Restored the `design` phase** (`forge-designer`, phase 2) — removed in an earlier
-  version, now back in the pipeline. It mocks every UI surface in Google Stitch with
-  realistic mock data and pauses for human approval before any code is written; it is
-  auto-skipped for backend/no-UI tasks. The pipeline is now seven phases: plan → design →
-  code → test → review → security → deploy, with three pause points (after plan, after
-  design, before deploy).
+  version, now back in the pipeline and **rebuilt without Google Stitch**. It renders a
+  self-contained HTML/CSS mockup of every UI surface with realistic mock data (invoking
+  the `design-taste` skill), screenshots each one for a real visual gate, and — when the
+  stack is React + shadcn/ui — also scaffolds real shadcn component code for the coder
+  (via `ui-ux-pro-max`). Auto-skips backend/no-UI tasks. The pipeline is now seven phases:
+  plan → design → code → test → review → security → deploy, with three pause points
+  (after plan, after design, before deploy).
 - **Per-agent `effort` frontmatter** on every phase — `xhigh` for the judgment phases
   (plan, design, review), `max` for code and security, `medium` for test and deploy.
 
