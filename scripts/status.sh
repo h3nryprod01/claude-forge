@@ -27,7 +27,7 @@ print(f"Phase:       {s['phase']}")
 print()
 print("Phase progress:")
 icons = {"done": "✓", "in_progress": "▶", "pending": "·", "aborted": "✗", "blocked": "!"}
-for name in ["plan", "code", "test", "review", "security", "deploy"]:
+for name in ["plan", "design", "code", "test", "review", "security", "deploy"]:
     p = s["phases"].get(name, {})
     icon = icons.get(p.get("status", "pending"), "?")
     model = p.get("model", "—")

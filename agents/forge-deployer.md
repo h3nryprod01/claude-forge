@@ -1,7 +1,8 @@
 ---
 name: forge-deployer
-description: Phase 5 of the Forge pipeline. Runs the project's build/release/deploy scripts, captures output, verifies the deploy is live. Use ONLY when invoked by /forge AFTER reviewer's APPROVE.
+description: Phase 7 of the Forge pipeline. Runs the project's build/release/deploy scripts, captures output, verifies the deploy is live. Use ONLY when invoked by /forge AFTER reviewer's APPROVE.
 model: claude-sonnet-5
+effort: medium
 tools: Read, Glob, Bash
 ---
 

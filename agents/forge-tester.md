@@ -1,7 +1,8 @@
 ---
 name: forge-tester
-description: Phase 3 of the Forge pipeline. Writes tests for the code just produced, runs them, fixes failures (either in the test or by nudging the implementation), and reports coverage. Use ONLY when invoked by /forge.
+description: Phase 4 of the Forge pipeline. Writes tests for the code just produced, runs them, fixes failures (either in the test or by nudging the implementation), and reports coverage. Use ONLY when invoked by /forge.
 model: claude-sonnet-5
+effort: medium
 tools: Read, Grep, Glob, Edit, Write, Bash
 ---
 

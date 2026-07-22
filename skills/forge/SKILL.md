@@ -1,24 +1,28 @@
 ---
 name: forge
-description: Runs a sequential build pipeline (plan → code → test → review → security → deploy) with six specialist agents pinned to right-sized models (Opus 4.8 for plan and review, Sonnet 5 for code, test, security, and deploy). Trigger when the user says "build X", "implement X", "ship X", "/forge", "forge build", or asks to run a full feature lifecycle. Also handles subcommands "status", "resume", and "abort" for an in-flight build.
+description: Runs a sequential build pipeline (plan → design → code → test → review → security → deploy) with seven specialist agents pinned to right-sized models and effort (Fable 5 at xhigh for plan, design, and review; Opus 4.8 at max for security; Sonnet 5 for code, test, and deploy). The design phase mocks UI/UX in Google Stitch for human approval before any code is written (skipped for backend/no-UI tasks). Trigger when the user says "build X", "implement X", "ship X", "/forge", "forge build", or asks to run a full feature lifecycle. Also handles subcommands "status", "resume", and "abort" for an in-flight build.
 ---
 
 # Forge — sequential build pipeline
 
-You are the **orchestrator**. Six specialist agents do the actual work, each
-pinned to the right model for its job:
+You are the **orchestrator**. Seven specialist agents do the actual work, each
+pinned to the right model and reasoning effort for its job:
 
-| Phase    | Agent              | Model        |
-| -------- | ------------------ | ------------ |
-| Plan     | `forge-planner`    | Opus 4.8     |
-| Code     | `forge-coder`      | Sonnet 5     |
-| Test     | `forge-tester`     | Sonnet 5     |
-| Review   | `forge-reviewer`   | Opus 4.8     |
-| Security | `forge-security`   | Sonnet 5     |
-| Deploy   | `forge-deployer`   | Sonnet 5     |
+| Phase    | Agent              | Model    | Effort |
+| -------- | ------------------ | -------- | ------ |
+| Plan     | `forge-planner`    | Fable 5  | xhigh  |
+| Design   | `forge-designer`   | Fable 5  | xhigh  |
+| Code     | `forge-coder`      | Sonnet 5 | max    |
+| Test     | `forge-tester`     | Sonnet 5 | medium |
+| Review   | `forge-reviewer`   | Fable 5  | xhigh  |
+| Security | `forge-security`   | Opus 4.8 | max    |
+| Deploy   | `forge-deployer`   | Sonnet 5 | medium |
 
 Your job: dispatch them in order, manage `.forge/<id>/state.json`, and surface
-the two natural pause points (after plan, before deploy).
+the three natural pause points (after plan, after design, before deploy). The
+**design** phase drives Google Stitch to mock every UI layout with realistic data
+so a human can verify the look before any code is written; it is skipped
+automatically for tasks with no UI.
 
 ## Argument handling
 
@@ -30,7 +34,7 @@ The user's request is in `$ARGUMENTS`.
 - `abort` → mark `.forge/current/state.json` `phase: aborted`, summarize, exit.
 - Anything else → treat as a new task description; start a fresh build.
 
-## New build — seven steps
+## New build — eight steps
 
 ### 0. Bootstrap state
 
@@ -44,7 +48,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/scripts/init-state.sh "<task-id>" "<task description>
 This creates `.forge/<task-id>/state.json` and a `.forge/current` symlink.
 Capture the state directory path — you'll hand it to every agent.
 
-### 1. PLAN (Opus)
+### 1. PLAN (Fable 5)
 
 Spawn `forge-planner`. Prompt:
 
@@ -56,7 +60,7 @@ Read this directory's plan.md if it exists (resume case). Otherwise produce
 a fresh plan.md per your agent definition. Write the file and summarize.
 ```
 
-Wait. Update `state.json` → `phases.plan.status = "done"`, `phase = "code"`.
+Wait. Update `state.json` → `phases.plan.status = "done"`, `phase = "design"`.
 
 **Pause point**: present the plan summary. Ask: *"Plan looks good? (y / edit / abort)"*
 
@@ -64,7 +68,45 @@ Wait. Update `state.json` → `phases.plan.status = "done"`, `phase = "code"`.
 - `edit` → re-spawn planner with the user's feedback added to the prompt
 - `abort` → mark aborted; exit
 
-### 2. CODE (Sonnet)
+### 2. DESIGN (Fable 5) — Stitch UI/UX, then human verify
+
+Read `plan.md`'s **## UI surfaces** section first to decide whether to run.
+
+- **No UI surfaces** (it says `None — no UI in this task.`) → skip this phase.
+  Set `phases.design.status = "skipped"`, `phase = "code"`, and go straight to
+  CODE. Do **not** spawn the designer or open Stitch.
+- **Has UI surfaces** → spawn `forge-designer`. Prompt:
+
+```
+TASK: <task>
+STATE DIR: <.forge/<id>>
+
+Read plan.md (especially ## UI surfaces). Design every listed layout in Google
+Stitch, populated with realistic mock data. Save previews + design tokens under
+<state-dir>/design/. Write design-summary.md. Do NOT write app code.
+```
+
+Wait for the designer to finish. **Do not mark the phase done yet** — resolve the
+hard-block check and the verify gate first, so `design` is only `done` once it's
+actually approved.
+
+**Hard block.** If `design-summary.md` status is **`BLOCKED — Stitch not connected`**:
+surface the connect command from the summary; ask *"Connect Stitch and retry, or
+skip-design and code without mockups?"* Do not silently continue.
+
+**Pause point (the verify gate)**: present the design summary + the preview
+screenshots under `.forge/<id>/design/`. Ask:
+*"Designs look right? (y / regenerate <screen> with <change> / skip-design / abort)"*
+
+- `y` → approved; continue to CODE — the coder builds against these designs.
+- `regenerate <screen> with <change>` → re-spawn `forge-designer` with that change, then re-run this gate.
+- `skip-design` → continue to CODE without binding to the designs.
+- `abort` → mark aborted; exit.
+
+Once design is **approved or skipped**, update `state.json` →
+`phases.design.status = "done"` (or `"skipped"`), `phase = "code"`.
+
+### 3. CODE (Sonnet 5)
 
 Spawn `forge-coder`. Prompt:
 
@@ -72,13 +114,15 @@ Spawn `forge-coder`. Prompt:
 TASK: <task>
 STATE DIR: <.forge/<id>>
 
-Read plan.md and execute step by step per your agent definition.
+Read plan.md and execute step by step per your agent definition. If
+design-summary.md exists and is approved, build the UI to match the approved
+Stitch designs (use the extracted tokens + per-screen markup under design/).
 Write code-summary.md.
 ```
 
 Update state → `phases.code.status = "done"`, `phase = "test"`. No pause.
 
-### 3. TEST (Sonnet)
+### 4. TEST (Sonnet 5)
 
 Spawn `forge-tester`. Prompt:
 
@@ -97,7 +141,7 @@ If `test-summary.md` reports failures the agent couldn't fix:
 
 Update state → `phases.test.status = "done"`, `phase = "review"`. No pause if green.
 
-### 4. REVIEW (Opus)
+### 5. REVIEW (Fable 5)
 
 Spawn `forge-reviewer`. Prompt:
 
@@ -112,13 +156,13 @@ with verdict.
 
 Read the verdict from `review-findings.md`:
 
-- **APPROVE** → continue to deploy
+- **APPROVE** → continue to security
 - **APPROVE WITH FIXES** → fixes already applied; continue
 - **BLOCK** → surface CRITICAL/HIGH findings; ask: *"Re-run coder, manual fix, or abort?"*
 
 Update state → `phases.review.status = "done"`, `phase = "security"`.
 
-### 5. SECURITY SCAN (Sonnet)
+### 6. SECURITY SCAN (Opus 4.8)
 
 Spawn `forge-security`. Prompt:
 
@@ -144,7 +188,7 @@ Read the verdict from `security-findings.md`:
 
 Update state → `phases.security.status = "done"`, `phase = "deploy"`. No pause if CLEAN.
 
-### 6. DEPLOY (Sonnet 5) — pause first
+### 7. DEPLOY (Sonnet 5) — pause first
 
 **Pause point**: show the review summary + ask *"Deploy now? (y / hold / abort)"*
 
@@ -162,19 +206,20 @@ Write deploy-log.md.
 
 Update state → `phases.deploy.status = "done"`, `phase = "done"`.
 
-### 7. Wrap
+### 8. Wrap
 
 Print a final summary:
 
 ```
 ✅ Forge build complete — <task>
    Plan:     .forge/<id>/plan.md
+   Design:   <N screens in Stitch | skipped — no UI>
    Code:     <N> files, <M> steps
    Tests:    <X> passed
    Review:   <verdict>
    Security: <CLEAN / BLOCK + count>
    Deploy:   <URL or status>
-   Total:    <wall time>   Models: opus + sonnet + sonnet + opus + sonnet + sonnet
+   Total:    <wall time>   Models: fable + fable + sonnet + sonnet + fable + opus + sonnet
 ```
 
 ## Orchestrator rules
@@ -184,20 +229,25 @@ Print a final summary:
   right tool allowlists; you don't need to second-guess them.
 - **Update state.json before and after each agent.** A killed session needs accurate
   state for `/forge resume`.
-- **Pause at the 2 natural points only**: after plan, before deploy. Don't ask
-  between every phase — that defeats the point.
+- **Pause at the 3 natural points only**: after plan, after design, before deploy.
+  Don't ask between every phase — that defeats the point.
+- **Skip the design phase when there's no UI.** Read `plan.md`'s UI surfaces; if
+  none, mark `design` skipped and go to code. Never open Stitch for backend tasks.
 - **Surface agent errors verbatim.** Don't paper over.
 
 ## Model rationale (for your own decision-making; only repeat to the user if asked)
 
-- Opus 4.8 on plan + review = highest reasoning, state-of-the-art bug-finding.
-  Each runs once per build — the two gates where correctness matters most.
-- Sonnet 5 on code + test + security = near-Opus coding/agentic quality at Sonnet
-  cost. Most of the token volume. Security runs tooling and triages output —
-  bounded reasoning, well within Sonnet 5's range.
-- Sonnet 5 on deploy = mechanical, but keeping one model across the execution half
-  of the pipeline maximizes prompt-cache reuse and avoids a model swap for the last
-  step. Following a known script.
+- Fable 5 at xhigh on plan + design + review = the judgment-heavy phases. Planning
+  weighs tradeoffs, design turns intent into UI (and reads Stitch mockups at the
+  verify gate), and review is adversarial critique — all ideation/reasoning work,
+  run at high effort where it pays off.
+- Opus 4.8 at max on security = the last gate before deploy. Vulnerability triage
+  is high-stakes judgment — worth the deepest-reasoning model at full effort, and
+  it runs once per build.
+- Sonnet 5 on code + test + deploy = the execution phases. Code runs at **max**
+  effort (correctness-critical writing); test and deploy run at **medium** — enough
+  to write and run tests and follow a known deploy script without overspending.
+  Keeping one model across most of the execution half also maximizes prompt-cache
+  reuse.
 
-Cost vs all-Opus: roughly −60 to −75 %. Sonnet 5's intro pricing ($2/$10 per MTok
-through 2026-08-31) widens the gap further while it lasts.
+Retune by editing each agent's `model` + `effort` frontmatter.
