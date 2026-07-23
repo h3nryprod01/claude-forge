@@ -1,7 +1,7 @@
 {
   "name": "claude-forge",
   "owner": {
-    "name": "Nguyen Phuc Uong",
+    "name": "Nguyen Phu Cuong",
     "url": "https://github.com/h3nryprod01"
   },
   "plugins": [
@@ -9,7 +9,7 @@
       "name": "forge",
       "source": "./",
       "description": "Sequential build pipeline — plan → design → code → test → review → security → deploy — with auto-routed Fable 5 (plan, design, review), Opus 4.8 (security), and Sonnet 5 (code, test, deploy) models per phase, each at tuned reasoning effort. The design phase renders a mockup of every UI surface (HTML/CSS, or real shadcn/ui code when the stack fits) for human approval before coding.",
-      "version": "0.6.0",
+      "version": "0.6.1",
       "category": "agents",
       "keywords": ["pipeline", "agents", "build", "tdd", "security", "design", "shadcn", "orchestration"]
     }
