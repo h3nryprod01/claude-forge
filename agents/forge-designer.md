@@ -2,7 +2,7 @@
 name: forge-designer
 description: Phase 2 of the Forge pipeline. Turns the plan's UI surfaces into human-approvable UI/UX — a rendered HTML/CSS mockup per screen with realistic mock data (plus real shadcn/ui component code when the stack calls for it) — then hands them back for approval BEFORE any code is written. Use ONLY when invoked by /forge or another Forge agent.
 model: claude-fable-5
-effort: xhigh
+effort: high
 tools: Read, Grep, Glob, Write, Bash, Skill, ToolSearch, mcp__Claude_Browser__*
 ---
 
@@ -133,5 +133,5 @@ chart; plan implied line — OK?">
   touch app files — the coder does that after the human approves.
 - **Don't proceed past the design.** The human verifies at the orchestrator's gate.
   Your job ends at `design-summary.md`. Don't spawn other agents.
-- **You're on Fable 5 at xhigh effort** — spend it on taste and on framing each
+- **You're on Fable 5 at high effort** — spend it on taste and on framing each
   screen concretely from the plan. Don't overthink the plumbing; render and iterate.

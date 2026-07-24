@@ -2,6 +2,29 @@
 
 All notable changes to Forge are documented in this file. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [0.7.0] — 2026-07-23
+
+### Added
+
+- **Optional Phase 0 — brainstorm.** `/forge brainstorm <idea>` (alias `bs`) turns a rough
+  idea into an agreed brief before planning. The orchestrator runs the
+  `superpowers:brainstorming` skill **itself** rather than dispatching an agent —
+  brainstorming is a one-question-at-a-time dialogue with the human, which a dispatched
+  agent cannot do. It stops at the agreed brief (explicitly **not** handing off to
+  `writing-plans`, since `forge-planner` owns planning), writes `brainstorm.md`, and the
+  planner plans against that instead of the raw idea. Off by default.
+- `state.json` now tracks a `brainstorm` phase (seeded by `init-state.sh`, shown by
+  `status.sh`).
+
+### Changed
+
+- **Plan, design, and review drop from `xhigh` to `high` effort.** `high` buys most of the
+  judgment benefit without xhigh's spend on every build. Brainstorm is now the one place
+  worth **xhigh** — pure ideation, at most once per build, and every later phase inherits
+  its framing. Because Phase 0 runs on the session model, that setting is a documented
+  recommendation (set Fable 5 / xhigh before invoking) rather than a pinned frontmatter
+  value.
+
 ## [0.6.1] — 2026-07-23
 
 ### Fixed

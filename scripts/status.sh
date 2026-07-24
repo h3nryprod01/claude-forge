@@ -27,11 +27,11 @@ print(f"Phase:       {s['phase']}")
 print()
 print("Phase progress:")
 icons = {"done": "✓", "in_progress": "▶", "pending": "·", "aborted": "✗", "blocked": "!"}
-for name in ["plan", "design", "code", "test", "review", "security", "deploy"]:
+for name in ["brainstorm", "plan", "design", "code", "test", "review", "security", "deploy"]:
     p = s["phases"].get(name, {})
     icon = icons.get(p.get("status", "pending"), "?")
     model = p.get("model", "—")
-    print(f"  {icon}  {name:<8}  [{model:<6}]  {p.get('status','pending')}")
+    print(f"  {icon}  {name:<10}  [{model:<6}]  {p.get('status','pending')}")
 PY
 
 DIR=".forge/current"
