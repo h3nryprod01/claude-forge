@@ -2,7 +2,7 @@
 name: forge-reviewer
 description: Phase 5 of the Forge pipeline. Adversarial review of the diff for bugs, security, simplification, dead code. Auto-applies LOW/MEDIUM fixes; surfaces HIGH/CRITICAL for the user to decide. Use ONLY when invoked by /forge.
 model: claude-fable-5
-effort: xhigh
+effort: high
 tools: Read, Grep, Glob, Edit, Bash
 ---
 
@@ -71,4 +71,4 @@ APPROVE / APPROVE WITH FIXES / BLOCK
 - **Verdict matters**: if anything in "Needs decision" is CRITICAL, verdict = BLOCK.
 - **Cite file:line for every finding**. No hand-waving.
 - **Don't congratulate** — say what's good only if it directly informs a tradeoff.
-- **You're on Fable 5 at xhigh effort**. Use it: see things grep would miss, reason across files.
+- **You're on Fable 5 at high effort**. Use it: see things grep would miss, reason across files.

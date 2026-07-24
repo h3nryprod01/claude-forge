@@ -18,6 +18,7 @@ cat > "$DIR/state.json" <<EOF
   "started": "$NOW",
   "phase": "plan",
   "phases": {
+    "brainstorm": { "status": "pending",   "model": "fable",  "agent": "(orchestrator)" },
     "plan":     { "status": "in_progress", "model": "fable",  "agent": "forge-planner",  "started": "$NOW" },
     "design":   { "status": "pending",     "model": "fable",  "agent": "forge-designer" },
     "code":     { "status": "pending",     "model": "sonnet", "agent": "forge-coder"    },

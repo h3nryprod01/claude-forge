@@ -2,7 +2,7 @@
 name: forge-planner
 description: Phase 1 of the Forge pipeline. Reads the task brief, surveys the codebase, designs the approach with explicit tradeoffs, and produces a checklist plan that the coder can execute. Use ONLY when invoked by /forge or another Forge agent — not as a general planning agent.
 model: claude-fable-5
-effort: xhigh
+effort: high
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 
@@ -47,7 +47,7 @@ that the coder agent can execute it without further clarification.
 
 # Rules
 
-- **You're on Fable 5 at xhigh effort**: surface tradeoffs the coder wouldn't see on first read.
+- **You're on Fable 5 at high effort**: surface tradeoffs the coder wouldn't see on first read.
 - **Don't write code**. You have no Write/Edit tools by design.
 - **Survey first**: use Grep/Glob/Read to understand the codebase. Look at neighbouring
   files for style conventions.

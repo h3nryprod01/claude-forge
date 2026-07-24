@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Runs a sequential build pipeline (plan → design → code → test → review → security → deploy) with seven specialist agents pinned to right-sized models and effort (Fable 5 at xhigh for plan, design, and review; Opus 4.8 at max for security; Sonnet 5 for code, test, and deploy). The design phase renders a mockup of every UI surface (self-contained HTML/CSS, plus real shadcn/ui code when the stack calls for it) for human approval before any code is written (skipped for backend/no-UI tasks). Trigger when the user says "build X", "implement X", "ship X", "/forge", "forge build", or asks to run a full feature lifecycle. Also handles subcommands "status", "resume", and "abort" for an in-flight build.
+description: Runs a sequential build pipeline (plan → design → code → test → review → security → deploy) with seven specialist agents pinned to right-sized models and effort (Fable 5 at high for plan, design, and review; Opus 4.8 at max for security; Sonnet 5 for code, test, and deploy). An optional Phase 0 brainstorm (`/forge brainstorm <idea>`) turns a rough idea into an agreed brief before planning. The design phase renders a mockup of every UI surface (self-contained HTML/CSS, plus real shadcn/ui code when the stack calls for it) for human approval before any code is written (skipped for backend/no-UI tasks). Trigger when the user says "build X", "implement X", "ship X", "/forge", "forge build", or asks to run a full feature lifecycle. Also handles subcommands "status", "resume", and "abort" for an in-flight build.
 ---
 
 # Forge — sequential build pipeline
@@ -10,13 +10,18 @@ pinned to the right model and reasoning effort for its job:
 
 | Phase    | Agent              | Model    | Effort |
 | -------- | ------------------ | -------- | ------ |
-| Plan     | `forge-planner`    | Fable 5  | xhigh  |
-| Design   | `forge-designer`   | Fable 5  | xhigh  |
+| Plan     | `forge-planner`    | Fable 5  | high   |
+| Design   | `forge-designer`   | Fable 5  | high   |
 | Code     | `forge-coder`      | Sonnet 5 | max    |
 | Test     | `forge-tester`     | Sonnet 5 | medium |
-| Review   | `forge-reviewer`   | Fable 5  | xhigh  |
+| Review   | `forge-reviewer`   | Fable 5  | high   |
 | Security | `forge-security`   | Opus 4.8 | max    |
 | Deploy   | `forge-deployer`   | Sonnet 5 | medium |
+
+Ahead of them sits an optional **Phase 0 — brainstorm**, which YOU run yourself: it is
+a dialogue with the human, so it cannot be a dispatched agent and has no frontmatter to
+pin. Recommended setting is **Fable 5 at xhigh** — set the session model before invoking
+`/forge brainstorm`.
 
 Your job: dispatch them in order, manage `.forge/<id>/state.json`, and surface
 the three natural pause points (after plan, after design, before deploy). The
@@ -28,15 +33,21 @@ the look before any code is written; it is skipped automatically for tasks with 
 
 The user's request is in `$ARGUMENTS`.
 
+**First, detect run mode.** If `$ARGUMENTS` begins with the token `brainstorm` or `bs`,
+strip that token and set **BRAINSTORM mode = on**. Otherwise it is off — the default,
+which goes straight to planning. Record the mode in `state.json` at bootstrap so
+`resume` continues the same way.
+
 - `status` → run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/status.sh` and print. Exit.
 - `resume` → read `.forge/current/state.json` and continue from its `phase`
   field. If no current build, say so and exit.
 - `abort` → mark `.forge/current/state.json` `phase: aborted`, summarize, exit.
-- Anything else → treat as a new task description; start a fresh build.
+- Anything else → treat the mode-stripped remainder as a new task description; start a
+  fresh build.
 
-## New build — eight steps
+## New build
 
-### 0. Bootstrap state
+### Setup — bootstrap state
 
 Generate a task id: `YYYY-MM-DD-<slug>` (slug = first 3-4 words of the task,
 lowercased, hyphenated). Run:
@@ -48,6 +59,25 @@ bash ${CLAUDE_PLUGIN_ROOT}/scripts/init-state.sh "<task-id>" "<task description>
 This creates `.forge/<task-id>/state.json` and a `.forge/current` symlink.
 Capture the state directory path — you'll hand it to every agent.
 
+### 0. BRAINSTORM (optional — you run this one, not an agent)
+
+**BRAINSTORM mode off** → set `phases.brainstorm.status = "skipped"`, `phase = "plan"`,
+and go straight to PLAN. This is the default.
+
+**BRAINSTORM mode on** → do **not** spawn an agent. Brainstorming is a back-and-forth
+with the human — one question at a time — so it can only run in your own context. Set
+`phase = "brainstorm"`, then invoke the **`superpowers:brainstorming`** skill and work
+the idea with the user: explore intent, constraints and success criteria, propose 2-3
+approaches with tradeoffs, and converge on an agreed direction.
+
+**Stop at the agreed brief.** That skill normally ends by invoking `writing-plans` — do
+**not** let it. `forge-planner` is Forge's planning step; running both produces two
+competing plans. Once the user approves the direction, write `<state-dir>/brainstorm.md`
+— the problem as agreed, the chosen approach and why, the alternatives rejected, the
+constraints, and the success criteria — then continue to PLAN.
+
+Update `state.json` → `phases.brainstorm.status = "done"`, `phase = "plan"`.
+
 ### 1. PLAN (Fable 5)
 
 Spawn `forge-planner`. Prompt:
@@ -57,7 +87,9 @@ TASK: <task>
 STATE DIR: <.forge/<id>>
 
 Read this directory's plan.md if it exists (resume case). Otherwise produce
-a fresh plan.md per your agent definition. Write the file and summarize.
+a fresh plan.md per your agent definition. If brainstorm.md exists, treat it as
+the agreed direction — plan against it instead of re-deriving the approach.
+Write the file and summarize.
 ```
 
 Wait. Update `state.json` → `phases.plan.status = "done"`, `phase = "design"`.
@@ -209,18 +241,22 @@ Print a final summary:
 
 ```
 ✅ Forge build complete — <task>
-   Plan:     .forge/<id>/plan.md
-   Design:   <N screens rendered | skipped — no UI>
-   Code:     <N> files, <M> steps
-   Tests:    <X> passed
-   Review:   <verdict>
-   Security: <CLEAN / BLOCK + count>
-   Deploy:   <URL or status>
-   Total:    <wall time>   Models: fable + fable + sonnet + sonnet + fable + opus + sonnet
+   Brainstorm: <brainstorm.md | skipped>
+   Plan:       .forge/<id>/plan.md
+   Design:     <N screens rendered | skipped — no UI>
+   Code:       <N> files, <M> steps
+   Tests:      <X> passed
+   Review:     <verdict>
+   Security:   <CLEAN / BLOCK + count>
+   Deploy:     <URL or status>
+   Total:      <wall time>   Models: fable + fable + sonnet + sonnet + fable + opus + sonnet
 ```
 
 ## Orchestrator rules
 
+- **Brainstorm is yours, not an agent's.** Phase 0 runs in your own context because it
+  is a dialogue. Never dispatch it, and never let it hand off to `writing-plans` —
+  `forge-planner` owns planning.
 - **One agent at a time.** Never spawn two Forge agents in parallel — they share state.
 - **Don't write code yourself.** Use the Agent tool to dispatch. The agents have the
   right tool allowlists; you don't need to second-guess them.
@@ -234,10 +270,13 @@ Print a final summary:
 
 ## Model rationale (for your own decision-making; only repeat to the user if asked)
 
-- Fable 5 at xhigh on plan + design + review = the judgment-heavy phases. Planning
+- Fable 5 at high on plan + design + review = the judgment-heavy phases. Planning
   weighs tradeoffs, design turns intent into UI (and reviews the rendered mockups at
   the verify gate), and review is adversarial critique — all ideation/reasoning work,
-  run at high effort where it pays off.
+  and `high` buys most of the benefit without xhigh's spend on every build.
+- Brainstorm (Phase 0) is the one place worth **xhigh**: it is pure ideation with no
+  code to check it, it runs at most once, and every later phase inherits its framing.
+  It runs on your session model, so set Fable 5 / xhigh before invoking it.
 - Opus 4.8 at max on security = the last gate before deploy. Vulnerability triage
   is high-stakes judgment — worth the deepest-reasoning model at full effort, and
   it runs once per build.

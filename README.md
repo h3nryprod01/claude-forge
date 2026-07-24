@@ -16,18 +16,32 @@ and right-sizes the model.
 
 | Phase | Agent | Model | Effort | Output |
 |---|---|---|---|---|
-| Plan | `forge-planner` | **Fable 5** | xhigh | `plan.md` with checkboxes |
-| Design | `forge-designer` | **Fable 5** | xhigh | rendered HTML mockups + tokens (shadcn code if applicable), human-approved |
+| Plan | `forge-planner` | **Fable 5** | high | `plan.md` with checkboxes |
+| Design | `forge-designer` | **Fable 5** | high | rendered HTML mockups + tokens (shadcn code if applicable), human-approved |
 | Code | `forge-coder` | **Sonnet 5** | max | files edited / created |
 | Test | `forge-tester` | **Sonnet 5** | medium | tests passing |
-| Review | `forge-reviewer` | **Fable 5** | xhigh | findings + auto-fix safe items |
+| Review | `forge-reviewer` | **Fable 5** | high | findings + auto-fix safe items |
 | Security | `forge-security` | **Opus 4.8** | max | `security-findings.md` (CVEs, secrets, SAST) |
 | Deploy | `forge-deployer` | **Sonnet 5** | medium | URL + status |
 
-Fable 5 runs the ideation/judgment phases (plan, design, review) at xhigh effort. Opus 4.8
+Fable 5 runs the ideation/judgment phases (plan, design, review) at high effort. Opus 4.8
 takes the security gate at max effort — high-stakes triage, once per build. Sonnet 5 runs
 the execution phases (code at max, test and deploy at medium), keeping one model across most
 of the execution half to maximize prompt-cache reuse.
+
+### Phase 0 — brainstorm (optional)
+
+Got a rough idea rather than a spec? Start with:
+
+```
+/forge brainstorm "a tool that tells me which of my subscriptions I never use"
+```
+
+Claude runs the `superpowers:brainstorming` skill **itself** — a real back-and-forth, one
+question at a time — until you agree on a direction, writes `.forge/<id>/brainstorm.md`,
+and hands that to the planner instead of the raw idea. It's a dialogue, so it can't be a
+dispatched agent; it runs on your session model. Set **Fable 5 at xhigh** before invoking
+for the best result. Without the `brainstorm` token, Forge goes straight to planning.
 
 ## Install
 
@@ -75,6 +89,7 @@ Cowork users can also just say it naturally:
 
 The orchestrator (main Claude) then:
 
+0. *(optional, `/forge brainstorm …`)* Runs the brainstorming skill with you → `.forge/<id>/brainstorm.md`.
 1. Spawns `forge-planner` → produces `.forge/<id>/plan.md`. **Pauses for your OK.**
 2. Spawns `forge-designer` → renders a mockup of every UI surface (self-contained HTML, or shadcn when the stack fits). **Pauses for your OK.** (Skipped for no-UI tasks.)
 3. Spawns `forge-coder` → implements the plan against the approved designs.
@@ -89,6 +104,7 @@ The orchestrator (main Claude) then:
 
 ```
 /forge "task"           Start a new build
+/forge brainstorm "idea"  Brainstorm the idea first, then build (alias: bs)
 /forge status           Print the current build's state.json
 /forge resume           Continue from the current phase (after a Stop or restart)
 /forge abort            Mark the current build aborted
